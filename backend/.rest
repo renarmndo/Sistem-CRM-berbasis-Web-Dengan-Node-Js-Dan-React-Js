@@ -1,0 +1,197 @@
+# login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "L_1",
+  "password": "123"
+}
+
+# Logout
+###
+GET http://localhost:5000/api/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMyNTQ2NzA1LCJleHAiOjE3MzI1NDY3MjB9.0ALvitlOWc6Rg2KLs5vbTudpwsTf4C9sqHh0IKcG_mU
+
+
+###
+GET http://localhost:5000/api/leader/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMyOTgxNTY0LCJleHAiOjE3MzI5ODE1Nzl9.ujjYO5bJtoEVScns4z3B94FxdvmE2ZrIsab_Ni-NFWA
+
+
+###
+# agent add costumer
+###
+POST http://localhost:5000/api/agent/add-costumer 
+Content-Type: application/json
+Authorization: Bearer 
+
+{
+  "msidn":"0812121212",
+  "full_name":"Rian Arifin",
+  "cls":"",
+  "bonus":0,
+  "nik":"12120123212",
+  "kk_number":"12312009131",
+  "package_id":1,
+  "activate_date":"2024-11-10",
+  "tempat_lahir":"Bandung",
+  "tgl_lahir":"2001-10-12",
+  "alamat":"Jln Pengasingan Bandung",
+  "no_rumah":"A3C",
+  "rt":"002",
+  "rw":"001",
+  "desa_kelurahan":"Cibarengkok",
+  "kecamatan":"Bandung Barat",
+  "kota_kabupaten":"Bandung",
+  "provinsi":"jawa barat",
+  "alamat_domisili":"jakarta utara",
+  "kota_domisili":"semper",
+  "phone_2":"081232131",
+  "email":"",
+  "whatsapp":"012312",
+  "status":"Pending"
+}
+
+
+
+# edit
+###
+PUT  http://localhost:5000/api/agent/edit-costumer 
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwidXNlcm5hbWUiOiJhY180Iiwicm9sZSI6InRlYW1fZnUiLCJpYXQiOjE3MzIyNjYzNzcsImV4cCI6MTczMjI2NjM5Mn0.8xmIEPBIJdNRjB_gUlHNiUU2zw-9fgrSS0NIf5Jwz5E
+
+{
+  "id":2,
+  "msidn":"123",
+  "full_name":"MIMIN",
+  "cls":"",
+  "bonus":100,
+  "nik":"12120123212",
+  "kk_number":"12312009131",
+  "package_id":1,
+  "activate_date":"2024-11-10",
+  "tempat_lahir":"Bandung",
+  "tgl_lahir":"2001-10-12",
+  "alamat":"Jln Pengasingan Bandung",
+  "no_rumah":"A3C",
+  "rt":"002",
+  "rw":"001",
+  "desa_kelurahan":"Cibarengkok",
+  "kecamatan":"Bandung Barat",
+  "kota_kabupaten":"Bandung",
+  "provinsi":"jawa barat",
+  "alamat_domisili":"jakarta utara",
+  "kota_domisili":"semper",
+  "phone2":"081232131",
+  "email":"",
+  "whatsapp":"012312",
+  "status":"Pending"
+}
+
+# get all
+### Get all users under leader
+GET http://localhost:5000/api/leader/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMyNzg5MTExLCJleHAiOjE3MzI3ODkxMjZ9.kQwtKvWm_012ond3gAu6IbjecZv6Q_iNzD8sWSlNODM 
+
+# daftar
+
+###
+### Register a new user
+POST http://localhost:5000/api/leader/register
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMyOTgyMDc4LCJleHAiOjE3MzI5ODIwOTN9.8nFus3Da1xvM3lgFopJrwjzW23IHC7g_BdEwKXQR1wo
+
+{
+  "username": "S_1",
+  "password": "123",
+  "email": "screener123@example.com",
+  "nama_user": "Rendani Hutagaol",
+  "role": "screener",
+  "leader_id": 1
+}
+
+
+# get all data
+
+###
+GET http://localhost:5000/api/agent/all-costumer
+Content-Type: application/json
+
+
+
+###
+GET http://localhost:5000/api/users/1
+
+
+
+###
+GET http://localhost:5000/api/costumers/9
+
+
+###
+GET http://localhost:5000/api/costumers/2
+
+
+
+### 
+DELETE http://localhost:5000/api/agent/costumer/19
+
+
+###
+GET http://localhost:5000/api/agent/costumer/27
+
+
+
+# add data 
+###
+POST http://localhost:5000/api/leader/add-package
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMzMjI4NTM3LCJleHAiOjE3MzMyMjg1NTJ9.dxEvg6oMuxRbdqDeCtMYhld20Xd7NcUmNGS6v5Cqw_w
+
+{
+  "name":"Paket Murah Meriah 100 GB",
+  "data_size":"100",
+  "price":"150000"
+}
+
+
+
+###
+GET http://localhost:5000/api/leader/packages
+Authorization: Bearer
+
+
+
+###
+GET http://localhost:5000/api/leader/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMzNDAyMDY1LCJleHAiOjE3MzM0MDIwODB9.cFCKaj0H1RS-qaHZL4pRaBkcByxkh67EDndXVDJga2Q
+
+
+###
+GET http://localhost:5000/api/users
+
+
+###
+DELETE http://localhost:5000/api/users/2
+
+
+username, password, email, nama_user, role, leader_id
+# Register users
+###
+POST http://localhost:5000/api/register
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjExLCJ1c2VybmFtZSI6IkxfMSIsIm5hbWFfdXNlciI6InJlbmRhbmkgaHV0YWdhb2wiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMzNDc5NjkyLCJleHAiOjE3MzM0Nzk3MDd9.oHUbRd_SGE_zJAFn8alClq1N6rN-7RaUcFZ5BS7HsPY
+
+{
+  "username": "TF_2",
+  "password": "123",
+  "email": "teamfu2@gmail.com",
+  "nama_user": "Ridho Dwicahyo",
+  "role": "agent"
+}
+
+
+# delete users
+###
+DELETE http://localhost:5000/api/leader/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMzNDc0ODM0LCJleHAiOjE3MzM0NzQ4NDl9.mbBxDpf7yCTbxHlEp-Alj6LPBgX-sPZABQVsg7U6LoQ 
