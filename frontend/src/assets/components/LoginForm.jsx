@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/API";
-import Background from "../../assets/img/b7.jpg";
+import Background from "../../assets/img/b9.jpg";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import Swal from "sweetalert2";
 // import Logo from "../img/Logo/Logo2.png";
@@ -48,6 +48,9 @@ const LoginForm = () => {
         case "activator":
           navigate("/dashboard");
           break;
+        case "team_fu":
+          navigate("/dashboard");
+          break;
         default:
           navigate("/unauthorized");
       }
@@ -76,7 +79,7 @@ const LoginForm = () => {
         <div className="bg-purple-200 shadow-2xl bg-transparent rounded-lg p-8">
           {/* Header */}
           <div className="text-center mb-4">
-            <h1 className="text-5xl font-bold text-blue-500 font-Psans">
+            <h1 className="text-5xl font-bold text-blue-700 font-Psans">
               Ne<span className="text-yellow-500">bula</span>Trecour
             </h1>
             <p className="font-Psans text-gray-300 text-sm">

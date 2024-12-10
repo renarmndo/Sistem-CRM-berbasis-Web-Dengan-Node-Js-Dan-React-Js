@@ -3,7 +3,6 @@ const { promiseDb } = require("../config/database");
 const bcrypt = require("bcrypt");
 
 const getUserById = async (req, res) => {
-  const { id } = req.params;
   try {
     // Gunakan promiseDb.execute
     const [users] = await promiseDb.execute(
@@ -183,11 +182,6 @@ const register = async (req, res) => {
   try {
     const { username, password, email, nama_user, role } = req.body;
 
-    // Role dari token yang sudah didecode
-    const tokenRole = req.user.role;
-
-    console.log("Role dari token:", tokenRole); // Debugging
-
     // Validasi input
     if (!username || !password || !email || !nama_user || !role) {
       return res.status(400).json({ msg: "Semua data wajib diisi!" });
@@ -204,13 +198,6 @@ const register = async (req, res) => {
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({
         msg: "Role hanya boleh diisi agent, team_fu, screener, activator, leader",
-      });
-    }
-
-    // Periksa jika role dari token adalah "leader"
-    if (tokenRole !== "leader") {
-      return res.status(403).json({
-        msg: "Akses ditolak, hanya leader yang dapat mendaftarkan pengguna.",
       });
     }
 
@@ -340,10 +327,115 @@ const register = async (req, res) => {
 //   }
 // };
 
+const createPackage = async (req, res) => {
+  try {
+    const { name, data_size, price } = req.body;
+    const result = await promiseDb.execute(
+      "INSERT INTO packages (name,data_size,price)VALUES(?,?,?)",
+      [name, data_size, price]
+    );
+    res.status(201).json({
+      msg: "Data packages berhasil ditambahkan",
+      data: {
+        id: result.insertId,
+        name,
+        data_size,
+        price,
+      },
+    });
+  } catch (error) {
+    console.log(`Create Package Error: ${error.message}`);
+    res.status(500).json({
+      msg: "Terjadi kesalahan saat menambahkan data ",
+      error: error.message,
+    });
+  }
+};
+
+// update package
+const updatePackage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, data_size, price } = req.body;
+    const [result] = await promiseDb.execute(
+      "UPDATE packages SET name = ?,data_size = ?,price = ?,WHERE id = ?",
+      [name, data_size, price, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        msg: "Data package tidak ditemukan",
+      });
+    }
+    res.status(200).json({
+      msg: "Data packages berhasil diperbarui",
+      data: {
+        id,
+        name,
+        data_size,
+        price,
+      },
+    });
+  } catch (error) {
+    console.log(`Update data package error`, error);
+    res.status(500).json({
+      msg: "Terjadi kesalahan saat memperbarui data",
+      error: error.message,
+    });
+  }
+};
+
+// delete
+const deletePackage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await promiseDb.execute(
+      "DELETE FROM packages WHERE id = ?",
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        msg: "Data packages tidak ditemukan",
+      });
+    }
+    res.status(200).json({
+      msg: "Data package Berhasil Dihapus",
+    });
+  } catch (error) {
+    console.log("Delete package error", error);
+    res.status(500).json({
+      msg: "Terjadi Kesalahan Saat menghapus Data",
+      error: error.message,
+    });
+  }
+};
+
+const getPackages = async (req, res) => {
+  try {
+    const [packages] = await promiseDb.execute(
+      "SELECT * FROM packages" // Mengambil semua data package
+    );
+
+    res.status(200).json({
+      msg: "Data package berhasil didapatkan",
+      data: packages,
+    });
+  } catch (error) {
+    console.error("Data gagal didapatkan", error);
+    res.status(500).json({
+      msg: "Terjadi kesalahan saat memuat data",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getUserById,
   getCostumersById,
   getUsers,
   deleteUser,
   register,
+  createPackage,
+  updatePackage,
+  deletePackage,
+  getPackages,
 };

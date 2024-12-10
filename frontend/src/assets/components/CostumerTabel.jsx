@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Plus,
   Pencil,
@@ -13,16 +13,18 @@ import {
 import axios from "axios";
 import "../css/style.css";
 import Modal from "react-modal";
-import EditModal from "./function/EditModal";
 import Swal from "sweetalert2";
+import DashboardEdit from "./function/DashboardEdit";
 
 const CostumerTabel = ({ data = [] }) => {
-  // const [searchTerm, setSearchTerm] = useState("");
+  // const [isModa, setEditOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [customers, setCustomers] = useState([]); // State untuk menyimpan data pelanggan
   const [result, setResult] = useState([]);
-
-  // data
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [full_name, setFullName] = useState("");
   const [msidn, setMsidn] = useState("");
   const [cls, setCls] = useState("");
@@ -47,7 +49,7 @@ const CostumerTabel = ({ data = [] }) => {
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [status, setStatus] = useState("Pending");
-  const [customerData, setCustomerData] = useState({
+  const [formData, setFormData] = useState({
     msidn: "",
     full_name: "",
     cls: "",
@@ -78,62 +80,58 @@ const CostumerTabel = ({ data = [] }) => {
   });
   const [isOpen, setIsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [customerId, setCustomerId] = useState(null);
+  const [serverError, setServerError] = useState(null);
+  // Edit State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [customerData, setCustomerData] = useState(null);
+
+  const openEditModal = (costumer) => {
+    setSelectedCustomerId(costumer.id);
+    setCustomerData(costumer);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateSuccess = (updatedData) => {
+    // Lakukan sesuatu setelah update berhasil, misalnya refresh data
+    setIsEditModalOpen(false);
+  };
+
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+  };
+
+  // const [isLoading, setIsLoading] = useState(false);
+  // const navigate = useNavigate();
+  // Fungsi untuk membuka dan menutup modal
+  // const openModal = () => setIsModalOpen(true);
+  // const closeModal = () => setIsModalOpen(false);
+  // edit data
+
+  // handle change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
   useEffect(() => {
-    console.log("Edit Modal - isEditOpen:", isEditOpen);
-    console.log("Edit Modal - customerId:", customerId);
-
-    if (isEditOpen && customerId) {
-      fetchCustomerData(customerId);
+    if (selectedDay && selectedMonth && selectedYear) {
+      // Format: YYYY-MM-DD
+      const formattedDate = `${selectedYear}-${String(selectedMonth).padStart(
+        2,
+        "0"
+      )}-${String(selectedDay).padStart(2, "0")}`;
+      setTglLahir(formattedDate); // Update tglLahir dengan tanggal yang diformat
     }
-  }, [isEditOpen, customerId]);
-
-  const fetchCustomerData = async (id) => {
-    try {
-      console.log("Attempting to fetch data for ID:", id);
-      const response = await axios.get(
-        `http://localhost:5000/api/costumers/${id}`
-      );
-
-      console.log("Full response:", response);
-      console.log("Response data:", response.data);
-
-      if (response.data && response.data.data) {
-        // Konversi tanggal jika perlu
-        const formattedData = {
-          ...response.data.data,
-          tgl_lahir: response.data.data.tgl_lahir
-            ? new Date(response.data.data.tgl_lahir).toISOString().split("T")[0]
-            : "",
-          activate_date: response.data.data.activate_date
-            ? new Date(response.data.data.activate_date)
-                .toISOString()
-                .split("T")[0]
-            : "",
-        };
-
-        console.log("Formatted data:", formattedData);
-
-        setCustomerData(formattedData);
-
-        // Atur tanggal lahir yang dipecah
-        const birthDate = new Date(response.data.data.tgl_lahir);
-        setSelectedDay(birthDate.getDate());
-        setSelectedMonth(birthDate.getMonth() + 1);
-        setSelectedYear(birthDate.getFullYear());
-      } else {
-        console.error("No data received from the API");
-      }
-    } catch (error) {
-      console.error("Error fetching customer data:", error);
-    }
-  };
+  }, [selectedDay, selectedMonth, selectedYear]);
 
   const openModal = () => {
     setIsOpen(true);
   };
-  console.log("Customer Data:", customerData);
+  console.log("Customer Data:", formData);
 
   const closeModal = () => {
     setIsOpen(false);
@@ -224,15 +222,16 @@ const CostumerTabel = ({ data = [] }) => {
     (_, i) => 1900 + i
   );
 
-  // State untuk menangani pilihan
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCustomerData({ ...customerData, [name]: value });
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleDateChange = (e) => {
+    const selectedDate = e.target.value; // Format otomatis: "YYYY-MM-DD"
+    setActivateDate(selectedDate); // Simpan tanggal yang dipilih
   };
 
   const handleSubmit = async (e) => {
@@ -337,7 +336,43 @@ const CostumerTabel = ({ data = [] }) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
-  // ambil data dari database ke form
+
+  // const [selectedDate, setSelectedDate] = useState("");
+
+  useEffect(() => {
+    // Mendapatkan tanggal hari ini dalam format YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today); // Mengatur tanggal yang terpilih
+  }, []);
+
+  // Packages
+  // State untuk menyimpan paket yang dipilih
+  const [packages, setPackages] = useState([]); // State untuk menyimpan data paket
+
+  useEffect(() => {
+    // Ambil data paket dari API
+    const fetchPackages = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/packages");
+        setPackages(response.data.data); // Update state dengan data paket
+      } catch (error) {
+        console.error("Error fetching packages:", error);
+      }
+    };
+
+    fetchPackages(); // Panggil fungsi untuk mengambil data saat komponen dimuat
+  }, []);
+
+  useEffect(() => {
+    // Misalnya, mendapatkan tanggal aktif dari API atau backend
+    const fetchedDate = "2024-12-14T17:00:00.000Z"; // Contoh data yang diterima dari server
+
+    // Format untuk hanya mengambil tanggal tanpa waktu
+    const formattedDate = new Date(fetchedDate).toISOString().split("T")[0]; // "2024-12-14"
+
+    setActivateDate(formattedDate); // Set tanggal yang diformat ke state
+  }, []);
+
   return (
     <div className="p-6">
       {/* Header Section */}
@@ -345,7 +380,11 @@ const CostumerTabel = ({ data = [] }) => {
         <h1 className="w-full text-2xl font-bold text-blue-800 text-center">
           Tabel Data Costumer
         </h1>
-
+        {serverError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            {serverError}
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
           {/* Date Input */}
           <div className="relative">
@@ -391,7 +430,7 @@ const CostumerTabel = ({ data = [] }) => {
             <div className="w-full p-6 rounded-lg shadow-lg max-w-6xl mx-auto">
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h1 className="text-blue-600 text-2xl font-bold mb-4">
-                  Add Customer
+                  Add New Customer
                 </h1>
                 <form onSubmit={handleSubmit}>
                   <div className="grid grid-cols-4 gap-4 mb-4">
@@ -399,6 +438,7 @@ const CostumerTabel = ({ data = [] }) => {
                       <label className="block text-gray-700">Msisdn</label>
                       <input
                         type="text"
+                        placeholder="Insert Msisdn"
                         value={msidn}
                         onChange={(e) => setMsidn(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -412,7 +452,11 @@ const CostumerTabel = ({ data = [] }) => {
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       >
                         <option>-- Choose MF Package --</option>
-                        {/* Add options dynamically here */}
+                        {packages.map((pkg) => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} {/* Tampilkan nama paket */}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
@@ -421,6 +465,7 @@ const CostumerTabel = ({ data = [] }) => {
                       </label>
                       <input
                         type="text"
+                        placeholder="Insert CLS"
                         value={cls}
                         onChange={(e) => setCls(e.target.value)}
                         className="w-full border border-gray-900 rounded-md px-3 py-2"
@@ -472,6 +517,7 @@ const CostumerTabel = ({ data = [] }) => {
                       </label>
                       <input
                         type="text"
+                        placeholder="Insert Nomor KK"
                         value={kk_number}
                         onChange={(e) => setKkNumber(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -482,7 +528,7 @@ const CostumerTabel = ({ data = [] }) => {
                       <input
                         type="date"
                         value={activate_date}
-                        onChange={(e) => setActivateDate(e.target.value)}
+                        onChange={handleDateChange}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
                     </div>
@@ -653,6 +699,7 @@ const CostumerTabel = ({ data = [] }) => {
                       </label>
                       <input
                         type="text"
+                        placeholder="Insert Address"
                         value={alamat_domisili}
                         onChange={(e) => setAlamatDomisili(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -665,6 +712,7 @@ const CostumerTabel = ({ data = [] }) => {
                       <input
                         type="text"
                         value={kota_domisili}
+                        placeholder="Insert City"
                         onChange={(e) => setKotaDomisili(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
@@ -679,6 +727,7 @@ const CostumerTabel = ({ data = [] }) => {
                       <input
                         type="text"
                         value={phone_2}
+                        placeholder="Insert Phone 2"
                         onChange={(e) => setPhone2(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
@@ -690,6 +739,7 @@ const CostumerTabel = ({ data = [] }) => {
                       <input
                         type="email"
                         value={email}
+                        placeholder="Insert Email"
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
@@ -704,6 +754,7 @@ const CostumerTabel = ({ data = [] }) => {
                       <input
                         type="text"
                         value={whatsapp}
+                        placeholder="Insert WhatsApp"
                         onChange={(e) => setWhatsapp(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
@@ -817,7 +868,7 @@ const CostumerTabel = ({ data = [] }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => openEdit(customer.id)}
+                          onClick={() => openEditModal(customer)}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           <Pencil size={18} />
@@ -850,12 +901,425 @@ const CostumerTabel = ({ data = [] }) => {
           </div>
         </div>
       </div>
-      <EditModal
-        isEditOpen={isEditOpen}
-        closeEdit={closeEdit}
-        costumerId={customerId}
-      />
-      {/* Modal aDD costumer */}
+      {/* Modal Add costumer */}
+      <Modal
+        isOpen={isEditOpen}
+        onRequestClose={closeEdit}
+        className="fixed inset-0 z-50 overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-gray-500 bg-opacity-75"
+      >
+        <div className="w-full p-6 rounded-lg shadow-lg max-w-6xl mx-auto">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h1 className="text-blue-600 text-2xl font-bold mb-6 text-center">
+              Edit Data Costumers
+            </h1>
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-4 gap-4 mb-4">
+                <div>
+                  <label htmlFor="msidn" className="block text-gray-700">
+                    Msisdn
+                  </label>
+                  <input
+                    htmlFor="msidn"
+                    name="msidn"
+                    id="msidn"
+                    type="text"
+                    placeholder="Insert Msisdn"
+                    value={formData.msidn}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700">MF Package</label>
+                  <select
+                    htmlFor="msidn"
+                    name="package_id"
+                    id="package_id"
+                    value={formData.package_id}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <option>-- Choose MF Package --</option>
+                    {/* Add options dynamically here */}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="cls" className="block text-gray-700">
+                    CLS
+                  </label>
+                  <input
+                    htmlFor="cls"
+                    name="cls"
+                    id="cls"
+                    type="text"
+                    value={formData.cls}
+                    onChange={handleChange}
+                    className="w-full border border-gray-900 rounded-md px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700">Apresiasi Bonus</label>
+                  <select
+                    htmlFor="bonus"
+                    name="bonus"
+                    value={formData.bonus}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <option>-- Choose Bonus --</option>
+                    {/* Add options dynamically here */}
+                  </select>
+                </div>
+              </div>
+              <h2 className="text-blue-500 text-lg font-bold mb-4">
+                Data Customer
+              </h2>
+              <div className="grid grid-cols-4 gap-4 mb-4">
+                <div>
+                  <label className="block text-gray-700">Nama Lengkap</label>
+                  <input
+                    type="text"
+                    htmlFor="full_name"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    placeholder="Insert Name"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700">NIK</label>
+                  <input
+                    type="text"
+                    htmlFor="nik"
+                    name="nik"
+                    value={formData.nik}
+                    onChange={handleChange}
+                    placeholder="Insert NIK"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="kk_number" className="block text-gray-700">
+                    Nomor KK
+                  </label>
+                  <input
+                    type="text"
+                    htmlFor="kk_number"
+                    name="kk_number"
+                    value={formData.kk_number}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="activate_date">Tgl Aktif</label>
+                  <input
+                    type="date"
+                    htmlFor="activate_date"
+                    name="activate_date"
+                    value={formData.activate_date}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label htmlFor="tempat_lahir" className="block text-gray-700">
+                    Tempat Lahir
+                  </label>
+                  <input
+                    type="text"
+                    htmlFor="tempat_lahir"
+                    name="tempat_lahir"
+                    value={formData.tempat_lahir}
+                    onChange={handleChange}
+                    placeholder="Insert Place of Birth"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700">Tanggal Lahir</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Pilihan Tanggal */}
+                    <select
+                      value={selectedDay}
+                      onChange={(e) => setSelectedDay(e.target.value)}
+                      className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      <option value="">Tanggal</option>
+                      {days.map((day) => (
+                        <option key={day} value={day}>
+                          {day}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Pilihan Bulan */}
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(e.target.value)}
+                      className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      <option value="">Bulan</option>
+                      {months.map((month, index) => (
+                        <option key={index} value={index + 1}>
+                          {month}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Pilihan Tahun */}
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                      className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      <option value="">Tahun</option>{" "}
+                      {years.map((year) => (
+                        <option key={year} value={year}>
+                          {" "}
+                          {year}{" "}
+                        </option>
+                      ))}{" "}
+                    </select>{" "}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="alamat" className="block text-gray-700">
+                    Alamat
+                  </label>
+                  <input
+                    type="text"
+                    htmlFor="alamat"
+                    name="alamat"
+                    value={formData.alamat}
+                    onChange={handleChange}
+                    placeholder="Masukkan Nama Jalan"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-6 gap-4 mb-4">
+                <div>
+                  <label htmlFor="no_rumah" className="block text-gray-700">
+                    Nomor Rumah
+                  </label>
+                  <input
+                    type="text"
+                    name="no_rumah"
+                    value={formData.no_rumah}
+                    onChange={handleChange}
+                    placeholder="Insert Address"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <div>
+                    <label htmlFor="rt" className="block text-gray-700">
+                      RT
+                    </label>
+                    <input
+                      type="text"
+                      name="rt"
+                      value={formData.rt}
+                      onChange={handleChange}
+                      placeholder="RT"
+                      className="w-20 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="rw" className="block text-gray-700">
+                      RW
+                    </label>
+                    <input
+                      type="text"
+                      name="rw"
+                      value={formData.rw}
+                      onChange={handleChange}
+                      placeholder="RW"
+                      className="w-20 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    htmlFor="desa_kelurahan"
+                    className="block text-gray-700"
+                  >
+                    Desa/kelurahan
+                  </label>
+                  <input
+                    type="text"
+                    name="desa_kelurahan"
+                    value={formData.esa_kelurahan}
+                    onChange={handleChange}
+                    placeholder="Insert Desa/kelurahan"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="kecamatan" className="block text-gray-700">
+                    Kecamatan
+                  </label>
+                  <input
+                    type="text"
+                    name="kecamatan"
+                    value={formData.kecamatan}
+                    onChange={handleChange}
+                    placeholder="Insert Kecamatan"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="kota_kabupaten"
+                    className="block text-gray-700"
+                  >
+                    Kota/Kabupaten
+                  </label>
+                  <input
+                    type="text"
+                    name="kota_kabupaten"
+                    value={formData.kota_kabupaten}
+                    onChange={handleChange}
+                    placeholder="Insert City"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="provinsi" className="block text-gray-700">
+                    Provinsi
+                  </label>
+                  <input
+                    type="text"
+                    name="provinsi"
+                    value={formData.provinsi}
+                    onChange={handleChange}
+                    placeholder="Insert Provinsi"
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-6 gap-4 mb-4">
+                <div>
+                  <label
+                    htmlFor="alamat_domisili"
+                    className="block text-gray-700"
+                  >
+                    Alamat/Domisili
+                  </label>
+                  <input
+                    type="text"
+                    name="alamat_domisili"
+                    value={formData.alamat_domisili}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="kota_domisili"
+                    className="block text-gray-700"
+                  >
+                    Kota Domisili
+                  </label>
+                  <input
+                    type="text"
+                    name="kota_domisili"
+                    value={formData.kota_domisili}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <div className="flex gap-2">
+                    <label htmlFor="phone_2" className="block text-gray-700">
+                      Phone 2
+                    </label>
+                    <input type="checkbox" />
+                  </div>
+                  <input
+                    type="text"
+                    name="phone_2"
+                    value={formData.phone_2}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <div className="flex gap-2">
+                    <label htmlFor="whatsapp" className="block text-gray-700">
+                      WhatsApp
+                    </label>
+                    <input type="checkbox" />
+                  </div>
+                  <input
+                    type="text"
+                    name="whatsapp"
+                    value={formData.whatsapp}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div className="">
+                  <div className="flex gap-2">
+                    <input type="checkbox" />
+                    <label htmlFor="">Diperlukan Deposit</label>
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="checkbox" />
+                    <label htmlFor="">Tambah 5GB</label>
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="checkbox" />
+                    <label htmlFor="">Auto Payment</label>
+                  </div>
+                </div>
+              </div>
+              {/* Continue with the rest of the form fields similarly */}
+              <div className="flex justify-end gap-2">
+                <button
+                  type="submit"
+                  className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={closeEdit}
+                  className="w-full bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+                >
+                  Close
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Modal>
+
+      {isEditModalOpen && (
+        <div className="modal">
+          <DashboardEdit
+            customerId={selectedCustomerId}
+            initialData={customerData}
+            onUpdateSuccess={handleUpdateSuccess}
+            onClose={handleCloseModal}
+          />
+        </div>
+      )}
     </div>
   );
 };

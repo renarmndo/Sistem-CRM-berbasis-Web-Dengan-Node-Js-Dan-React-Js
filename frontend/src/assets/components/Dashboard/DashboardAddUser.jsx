@@ -30,8 +30,8 @@ const DashboardAddUser = () => {
   // state modal
   const [isOpen, setIsOpen] = useState(false);
   // error
-  const [errors, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  // const [errors, setError] = useState("");
+  // const [success, setSuccess] = useState("");
 
   // handle input
   const handleChange = (e) => {
@@ -67,17 +67,10 @@ const DashboardAddUser = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("user");
     try {
       const response = await axios.post(
         "http://localhost:5000/api/register",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Mengirim role dalam header
-          },
-        }
+        formData
       );
       console.log(response.data);
       Swal.fire({

@@ -23,7 +23,7 @@ const DashboardFirst = () => {
           <h1>
             by{" "}
             <span className="font-second font-semibold text-blue-500">
-              Nebula<span className="font-second text-yellow-500">CRM</span>
+              Nebula<span className="font-second text-yellow-500">Trecour</span>
             </span>
           </h1>
         </div>

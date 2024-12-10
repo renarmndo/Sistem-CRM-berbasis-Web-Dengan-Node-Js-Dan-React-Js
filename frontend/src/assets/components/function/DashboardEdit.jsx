@@ -1,23 +1,23 @@
-import { useState, useEffect } from "react";
-import Modal from "react-modal";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import { useParams } from "react-router-dom";
 
-const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
-  // const [costumer, setCostumers] = useState([]);
-  // const [selectedCostumer, setSelectedCustomers] = useState(null);
+const DashboardEdit = ({
+  customerId,
+  initialData,
+  onUpdateSuccess,
+  onClose,
+}) => {
+  //   const [formData, setFormData] = useState(initialData);
+  const [packages, setPackages] = useState([]);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     msidn: "",
     full_name: "",
     cls: "",
-    bonus: null,
+    bonus: "",
     nik: "",
     kk_number: "",
     package_id: "",
@@ -37,235 +37,213 @@ const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
     phone_2: "",
     email: "",
     whatsapp: "",
-    status: "pending",
+    ...initialData,
   });
-  // Edit State
 
-  // Gunakan useEffect untuk fetch data berdasarkan customerId
-  // useEffect(() => {
-  //   console.log("Modal Edit - customerId:", customerId);
-  //   console.log("Modal Edit - isEditOpen:", isEditOpen);
-
-  //   const fetchCustomerData = async () => {
-  //     try {
-  //       // Pastikan URL endpoint benar
-  //       const response = await axios.get(
-  //         `http://localhost:5000/api/agent/costumer/${customerId}`
-  //       );
-
-  //       console.log("Full Response:", response);
-  //       console.log("Response Data:", response.data);
-
-  //       // Debugging keys
-  //       Object.keys(response.data).forEach((key) => {
-  //         console.log(`Key: ${key}, Value: ${response.data[key]}`);
-  //       });
-
-  //       // Sesuaikan dengan struktur response API Anda
-  //       setFormData(response.data);
-  //     } catch (error) {
-  //       console.error("Fetch Error Details:", error.response);
-  //       console.error("Error Message:", error.message);
-  //     }
-  //   };
-
-  //   // Pastikan kondisi fetch
-  //   if (isEditOpen && customerId) {
-  //     fetchCustomerData();
-  //   }
-  // }, [isEditOpen, customerId]);
-  // Ambil data berdasarkan ID saat modal dibuka
   useEffect(() => {
-    if (isEditOpen) {
-      axios
-        .get(`http://localhost:5000/api/agent/costumer/${id}`)
-        .then((response) => {
-          setFormData(response.data); // Pastikan response sesuai struktur formData
-        })
-        .catch((error) => {
-          console.error("Error fetching data: ", error);
+    // Fetch customer data by ID
+    const fetchCustomerData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/agent/costumer/${customerId}`
+        );
+        setFormData(response.data);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: "Tidak dapat mengambil data pelanggan",
         });
-    }
-  }, [id, isEditOpen]);
+        console.error("Error fetching customer data:", error);
+      }
+    };
 
-  // const handleCustomerSelect = (costumer) => {
-  //   setFormData({
-  //     id: costumer.id,
-  //     msidn: costumer.msidn,
-  //     email: costumer.email,
-  //     alamat: costumer.alamat,
-  //     full_name: costumer.full_name,
-  //     cls: costumer.cls,
-  //     bonus: costumer.bonus,
-  //     nik: costumer.nik,
-  //     kk_number: costumer.kk_number,
-  //     package_id: costumer.package_id,
-  //     activate_date: costumer.activate_date,
-  //     tempat_lahir: costumer.tempat_lahir,
-  //     tgl_lahir: costumer.tgl_lahir,
-  //     no_rumah: costumer.no_rumah,
-  //     rt: costumer.rt,
-  //     rw: costumer.rw,
-  //     desa_kelurahan: costumer.desa_kelurahan,
-  //     kecamatan: costumer.kecamatan,
-  //     kota_kabupaten: costumer.kota_kabupaten,
-  //     provinsi: costumer.provinsi,
-  //     alamat_domisili: costumer.alamat_domisili,
-  //     kota_domisili: costumer.kota_domisili,
-  //     phone_2: costumer.phone_2,
-  //     whatsapp: costumer.whatsapp,
-  //     status: costumer.status,
-  //   });
-  // };
-  // Handle input changes
-  // Tangani perubahan input
-  // Handler untuk mengubah nilai form
+    if (customerId) {
+      fetchCustomerData();
+    }
+  }, [customerId]);
+
+  // Handler untuk perubahan input
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // Efek untuk memperbarui state jika initialData berubah
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        ...initialData,
+      });
+    }
+  }, [initialData]);
+
+  //
+  // Handler submit form
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
 
-  //   if (!formData.full_name || !formData.msidn) {
-  //     Swal.fire({
-  //       icon: "warning",
-  //       title: "Peringatan",
-  //       text: "Nama dan MSIDN wajib diisi!",
-  //     });
-  //     return;
-  //   }
+  //   if (!validateForm()) return;
 
   //   setLoading(true);
   //   try {
   //     const response = await axios.put(
-  //       `http://localhost:5000/api/agent/edit-costumer`,
+  //       ` http://localhost:5000/api/agent/edit-costumer/${customerId}`,
   //       formData
   //     );
-  //     Swal.fire({
-  //       icon: "success",
-  //       title: "Berhasil",
-  //       text: response.data.msg,
-  //     }).then(() => navigate("/data-customers"));
+
+  //     if (response.data.success) {
+  //       onUpdateSuccess(response.data.data);
+  //       alert("Data pengguna berhasil diperbarui");
+  //     }
   //   } catch (error) {
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Gagal",
-  //       text: error.response?.data?.msg || "Terjadi kesalahan",
-  //     });
+  //     console.error("Gagal update pengguna:", error);
+  //     alert(error.response?.data?.message || "Gagal mengupdate pengguna");
   //   } finally {
   //     setLoading(false);
   //   }
   // };
 
-  // Handle form submission
-
-  // Handle form submission
-  // Tangani submit form
-  // Submit data yang diedit
-  const handleSubmit = (e) => {
+  // Handler submit form
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:5000/api/agent/edit-costumer", formData)
-      .then((response) => {
-        alert("Data updated successfully!");
-        closeEdit(); // Tutup modal setelah update
-      })
-      .catch((error) => {
-        console.error("Error updating data: ", error);
-        alert("Failed to update data.");
+
+    // Buat salinan data untuk diolah
+    const processedData = { ...formData };
+
+    // Konversi tanggal ke format MySQL (YYYY-MM-DD)
+    if (processedData.activate_date) {
+      processedData.activate_date = new Date(processedData.activate_date)
+        .toISOString()
+        .split("T")[0];
+    }
+
+    if (processedData.tgl_lahir) {
+      processedData.tgl_lahir = new Date(processedData.tgl_lahir)
+        .toISOString()
+        .split("T")[0];
+    }
+
+    try {
+      // Kirim request PUT ke backend
+      const response = await axios.put(
+        `http://localhost:5000/api/agent/edit-costumer/${customerId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Tampilkan pesan sukses
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil!",
+        text: "Data berhasil diupdate",
+        confirmButtonText: "OK",
       });
+
+      // Optional: Lakukan sesuatu setelah berhasil (misalnya refresh data atau navigasi)
+      console.log("Update berhasil:", response.data);
+      onClose();
+    } catch (error) {
+      // Tangani error
+      Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: error.response?.data?.message || "Gagal mengupdate data",
+        confirmButtonText: "Tutup",
+      });
+
+      console.error("Error updating data:", error);
+    }
   };
-  // useEffect(() => {
-  //   const getDataCostumers = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         "http://localhost:5000/api/agent/all-costumer"
-  //       );
-  //       setCostumers(response.data.data);
-  //       console.log("Ini Hasilnya Guys", response);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  //   getDataCostumers();
-  // }, []);
 
-  // useEffect(() => {
-  //   const getDataById = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `http://localhost:5000/api/costumers/${id}`
-  //       );
-  //       setMsidn(response.data.msidn);
-  //       setFullName(response.data.full_name);
-  //       setCls(response.data.cls);
-  //       setBonus(response.data.bonus);
-  //       setNik(response.data.nik);
-  //       setKkNumber(response.data.kk_number);
-  //       setPackageId(response.data.package_id);
-  //       setActivateDate(response.data.activate_date);
-  //       setTempatLahir(response.data.tempat_lahir);
-  //       setTglLahir(response.data.tgl_lahir);
-  //       setAlamat(response.data.alamat);
-  //       setNoRumah(response.data.no_rumah);
-  //       setRt(response.data.rt);
-  //       setRw(response.data.rw);
-  //       setDesaKelurahan(response.data.desa_kelurahan);
-  //       setKecamatan(response.data.kecamatan);
-  //       setKotaKabupaten(response.data.kota_kabupaten);
-  //       setProvinsi(response.data.provinsi);
-  //       setAlamatDomisili(response.data.alamat_domisili);
-  //       setKotaDomisili(response.data.kota_domisili);
-  //       setPhone2(response.data.phone_2);
-  //       setEmail(response.data.email);
-  //       setWhatsapp(response.data.whatsapp);
-  //       setStatus(response.data.status);
-  //       setDiperlukandDeposit(response.data.diperlukandDeposit);
-  //       setTambahan5GB(response.data.tambahan5GB);
-  //       setAutoPayment(response.data.autoPayment);
-  //       console.log(response.data);
-  //     } catch (error) {
-  //       if (error.response) {
-  //         console.log(error);
+  useEffect(() => {
+    // Ambil data paket dari API
+    const fetchPackages = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/packages");
+        setPackages(response.data.data); // Update state dengan data paket
+      } catch (error) {
+        console.error("Error fetching packages:", error);
+      }
+    };
+
+    fetchPackages(); // Panggil fungsi untuk mengambil data saat komponen dimuat
+  }, []);
+
+  // const handleClose = () => {
+  //   // console.log("Initial Data:", initialData); // Debug log
+  //   // console.log("Current Form Data:", formData); // Debug log
+
+  //   const isDataChanged =
+  //     JSON.stringify(initialData) !== JSON.stringify(formData);
+
+  //   if (isDataChanged) {
+  //     Swal.fire({
+  //       title: "Batalkan Perubahan?",
+  //       text: "Anda memiliki perubahan yang belum disimpan. Yakin ingin keluar?",
+  //       icon: "warning",
+  //       showCancelButton: true,
+  //       confirmButtonColor: "#3085d6",
+  //       cancelButtonColor: "#d33",
+  //       confirmButtonText: "Ya, Keluar",
+  //       cancelButtonText: "Batal",
+  //     }).then((result) => {
+  //       if (result.isConfirmed) {
+  //         console.log("Confirmed to close with changes"); // Debug log
+  //         if (onClose) {
+  //           onClose();
+  //         }
   //       }
+  //     });
+  //   } else {
+  //     console.log("No changes detected, closing"); // Debug log
+  //     if (onClose) {
+  //       onClose();
   //     }
-  //   };
-  //   getDataById();
-  // }, [id]);
+  //   }
+  // };
 
-  const months = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember",
-  ];
+  const handleClose = () => {
+    const isDataChanged =
+      JSON.stringify(initialData) !== JSON.stringify(formData);
 
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const currentYear = new Date().getFullYear();
-  const years = Array.from(
-    { length: currentYear - 1900 + 1 },
-    (_, i) => 1900 + i
-  );
+    if (isDataChanged) {
+      Swal.fire({
+        title: "Batalkan Perubahan?",
+        text: "Anda memiliki perubahan yang belum disimpan. Yakin ingin keluar?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Ya, Keluar",
+        cancelButtonText: "Batal",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Pastikan onClose adalah fungsi yang benar-benar menutup modal
+          if (typeof onClose === "function") {
+            onClose();
+          }
+        }
+      });
+    } else {
+      // Jika tidak ada perubahan, langsung tutup
+      if (typeof onClose === "function") {
+        onClose();
+      }
+    }
+  };
 
   return (
-    <Modal
-      isOpen={isEditOpen}
-      onRequestClose={closeEdit}
-      className="fixed inset-0 z-50 overflow-y-auto"
-      overlayClassName="fixed inset-0 bg-gray-500 bg-opacity-75"
-    >
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-500 bg-opacity-75">
       <div className="w-full p-6 rounded-lg shadow-lg max-w-6xl mx-auto">
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="w-full bg-white p-6 rounded-lg shadow-md">
           <h1 className="text-blue-600 text-2xl font-bold mb-6 text-center">
             Edit Data Costumers
           </h1>
@@ -289,15 +267,21 @@ const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
               <div>
                 <label className="block text-gray-700">MF Package</label>
                 <select
-                  htmlFor="msidn"
-                  name="package_id"
-                  id="package_id"
                   value={formData.package_id}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      package_id: e.target.value,
+                    })
+                  }
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option>-- Choose MF Package --</option>
-                  {/* Add options dynamically here */}
+                  {packages.map((pkg) => (
+                    <option key={pkg.id} value={pkg.id}>
+                      {pkg.name} {/* Tampilkan nama paket */}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -375,7 +359,12 @@ const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
                   type="date"
                   htmlFor="activate_date"
                   name="activate_date"
-                  value={formData.activate_date}
+                  value={
+                    formData.activate_date &&
+                    formData.activate_date.includes("T")
+                      ? formData.activate_date.split("T")[0]
+                      : formData.activate_date || ""
+                  }
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
@@ -397,49 +386,17 @@ const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700">Tanggal Lahir</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Pilihan Tanggal */}
-                  <select
-                    value={selectedDay}
-                    onChange={(e) => setSelectedDay(e.target.value)}
-                    className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Tanggal</option>
-                    {days.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                  {/* Pilihan Bulan */}
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Bulan</option>
-                    {months.map((month, index) => (
-                      <option key={index} value={index + 1}>
-                        {month}
-                      </option>
-                    ))}
-                  </select>
-                  {/* Pilihan Tahun */}
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Tahun</option>{" "}
-                    {years.map((year) => (
-                      <option key={year} value={year}>
-                        {" "}
-                        {year}{" "}
-                      </option>
-                    ))}{" "}
-                  </select>{" "}
-                </div>
+                <label htmlFor="tgl_lahir">Tanggal Lahir</label>
+                <input
+                  type="date"
+                  name="tgl_lahir"
+                  id="tgl_lahir"
+                  placeholder="Insert Tanggal Lahir"
+                  value={
+                    formData.tgl_lahir ? formData.tgl_lahir.split("T")[0] : ""
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
               </div>
               <div>
                 <label htmlFor="alamat" className="block text-gray-700">
@@ -506,7 +463,7 @@ const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
                 <input
                   type="text"
                   name="desa_kelurahan"
-                  value={formData.esa_kelurahan}
+                  value={formData.desa_kelurahan}
                   onChange={handleChange}
                   placeholder="Insert Desa/kelurahan"
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -641,12 +598,13 @@ const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
             <div className="flex justify-end gap-2">
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
               >
-                Save
+                Save Data
               </button>
               <button
-                onClick={closeEdit}
+                onClick={handleClose}
                 className="w-full bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
               >
                 Close
@@ -655,8 +613,8 @@ const EditModal = ({ isEditOpen, closeEdit, customerId }) => {
           </form>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 };
 
-export default EditModal;
+export default DashboardEdit;

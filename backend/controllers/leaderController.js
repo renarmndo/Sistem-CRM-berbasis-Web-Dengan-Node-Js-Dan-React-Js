@@ -199,12 +199,13 @@ const leaderController = {
 
       // Mengambil data customer dari leader dan semua user/agent dibawahnya
       const [customers] = await db.query(
-        `SELECT c.* 
-         FROM costumers c 
-         LEFT JOIN users u ON c.user_id = u.id 
-         WHERE c.status = 'success' 
-         AND (c.leader_id = ? OR u.leader_id = ?)`,
-        [leader_id, leader_id]
+        // `SELECT c.*
+        //  FROM costumers c
+        //  LEFT JOIN users u ON c.user_id = u.id
+        //  WHERE c.status = 'activated'
+        //  AND (c.leader_id = ? OR u.leader_id = ?)`,
+        // [leader_id, leader_id]
+        `SELECT * FROM costumers WHERE status = 'activated`
       );
 
       if (!customers || customers.length === 0) {

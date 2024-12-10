@@ -56,17 +56,16 @@ Authorization: Bearer
 
 # edit
 ###
-PUT  http://localhost:5000/api/agent/edit-costumer 
+PUT  http://localhost:5000/api/agent/edit-costumer/29 
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwidXNlcm5hbWUiOiJhY180Iiwicm9sZSI6InRlYW1fZnUiLCJpYXQiOjE3MzIyNjYzNzcsImV4cCI6MTczMjI2NjM5Mn0.8xmIEPBIJdNRjB_gUlHNiUU2zw-9fgrSS0NIf5Jwz5E
+
 
 {
-  "id":2,
   "msidn":"123",
-  "full_name":"MIMIN",
-  "cls":"",
+  "full_name":"Zico Dian Arifin",
+  "cls":"21",
   "bonus":100,
-  "nik":"12120123212",
+  "nik":"1212012301020006",
   "kk_number":"12312009131",
   "package_id":1,
   "activate_date":"2024-11-10",
@@ -82,10 +81,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwidXNlcm5hb
   "provinsi":"jawa barat",
   "alamat_domisili":"jakarta utara",
   "kota_domisili":"semper",
-  "phone2":"081232131",
-  "email":"",
-  "whatsapp":"012312",
-  "status":"Pending"
+  "phone_2":"081232131",
+  "email":"rendanihutagaol1234@gmail.com",
+  "whatsapp":"012312"
 }
 
 # get all
@@ -99,15 +97,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZ
 ### Register a new user
 POST http://localhost:5000/api/leader/register
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMyOTgyMDc4LCJleHAiOjE3MzI5ODIwOTN9.8nFus3Da1xvM3lgFopJrwjzW23IHC7g_BdEwKXQR1wo
 
 {
-  "username": "S_1",
+  "username": "TF_1",
   "password": "123",
   "email": "screener123@example.com",
-  "nama_user": "Rendani Hutagaol",
-  "role": "screener",
-  "leader_id": 1
+  "nama_user": "Jhoordy Sachsono 2",
+  "role": "team_fu"
 }
 
 
@@ -125,20 +121,23 @@ GET http://localhost:5000/api/users/1
 
 
 ###
-GET http://localhost:5000/api/costumers/9
+GET http://localhost:5000/api/costumers/29
 
 
 ###
-GET http://localhost:5000/api/costumers/2
+GET http://localhost:5000/api/costumers/
 
 
 
 ### 
-DELETE http://localhost:5000/api/agent/costumer/19
+DELETE http://localhost:5000/api/agent/costumer/
 
 
 ###
-GET http://localhost:5000/api/agent/costumer/27
+GET http://localhost:5000/api/agent/costumer/28
+
+###
+GET http://localhost:5000/api/agent/costumer/28
 
 
 
@@ -158,8 +157,23 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZ
 
 ###
 GET http://localhost:5000/api/leader/packages
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjExLCJ1c2VybmFtZSI6IkxfMSIsIm5hbWFfdXNlciI6InJlbmRhbmkgaHV0YWdhb2wiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMzNDg4MjY0LCJleHAiOjE3MzM0OTE4NjR9.c1bUMm6XoA25gKzCZD_UUZYgjX9jvWw-MYCYRPwCwwk
 
+
+###
+GET http://localhost:5000/api/packages
+
+
+###
+POST http://localhost:5000/api/packages/create
+Content-Type: application/json
+
+
+{
+  "name":"Paket Keluarga 250 GB",
+  "data_size":"250",
+  "price":"250000"
+}
 
 
 ###
@@ -180,18 +194,33 @@ username, password, email, nama_user, role, leader_id
 ###
 POST http://localhost:5000/api/register
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjExLCJ1c2VybmFtZSI6IkxfMSIsIm5hbWFfdXNlciI6InJlbmRhbmkgaHV0YWdhb2wiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMzNDc5NjkyLCJleHAiOjE3MzM0Nzk3MDd9.oHUbRd_SGE_zJAFn8alClq1N6rN-7RaUcFZ5BS7HsPY
 
 {
-  "username": "TF_2",
+  "username": "TF_3",
   "password": "123",
-  "email": "teamfu2@gmail.com",
+  "email": "teamfu3@gmail.com",
   "nama_user": "Ridho Dwicahyo",
-  "role": "agent"
+  "role": "team_fu"
 }
 
 
+###
+GET http://localhost:5000/api/activator/activated
 # delete users
 ###
 DELETE http://localhost:5000/api/leader/users/1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoibGVhZGVyXzIiLCJuYW1hX3VzZXIiOiJSZW5kYWkiLCJyb2xlIjoibGVhZGVyIiwiaWF0IjoxNzMzNDc0ODM0LCJleHAiOjE3MzM0NzQ4NDl9.mbBxDpf7yCTbxHlEp-Alj6LPBgX-sPZABQVsg7U6LoQ 
+
+
+###
+POST http://localhost:5000/api/activator/activated
+Content-Type: application/json
+
+
+{
+     "id":28
+}
+
+
+###
+GET http://localhost:5000/api/agent/customer

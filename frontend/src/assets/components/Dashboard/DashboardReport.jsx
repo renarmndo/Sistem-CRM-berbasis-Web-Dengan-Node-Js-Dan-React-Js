@@ -8,11 +8,21 @@ const DashboardReport = () => {
   const [error, setError] = useState(null);
   const [customers, setCostumers] = useState([]);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [totalReports, setTotalReports] = useState(0);
+  const [pendingReports, setPendingReports] = useState(0);
 
   const fetchCustomerData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/agent/all-costumer"
+        "http://localhost:5000/api/agent/activated",
+        {
+          params: {
+            from: fromDate,
+            to: toDate,
+          },
+        }
       );
       setCostumers(response.data.data);
     } catch (error) {
@@ -24,7 +34,11 @@ const DashboardReport = () => {
 
   useEffect(() => {
     fetchCustomerData();
-  }, []);
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    setPendingReports(customers.length - selectedCustomers.length);
+  }, [customers, selectedCustomers]);
 
   // const handleExport = async () => {
   //   try {
@@ -128,6 +142,7 @@ const DashboardReport = () => {
         bookType: "xlsx",
         type: "binary",
       });
+      setTotalReports((prev) => prev + 1);
     } catch (error) {
       console.error("Export failed:", error);
     }
@@ -160,6 +175,8 @@ const DashboardReport = () => {
           <label className="font-medium text-gray-700">From</label>
           <input
             type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
             className="border rounded p-2 text-gray-700 w-40"
           />
         </div>
@@ -167,6 +184,8 @@ const DashboardReport = () => {
           <label className="font-medium text-gray-700">To</label>
           <input
             type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
             className="border rounded p-2 text-gray-700 w-40"
           />
         </div>
@@ -184,56 +203,21 @@ const DashboardReport = () => {
       </div>
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        {[
-          { label: "Total Reports", count: 0, color: "blue" },
-          { label: "Completed", count: 0, color: "green" },
-          { label: "Pending", count: 0, color: "red" },
-        ].map((card, index) => (
-          <div
-            key={index}
-            className={`p-4 rounded-md shadow-md text-white bg-${card.color}-500 flex flex-col items-center`}
-          >
-            <span className="text-3xl font-bold">{card.count}</span>
-            <span className="mt-2 text-center">{card.label}</span>
-          </div>
-        ))}
+        <div className="p-4 rounded-md shadow-md text-white bg-blue-500 flex flex-col items-center">
+          <span className="text-3xl font-bold">{totalReports}</span>
+          <span className="mt-2 text-center">Total Reports</span>
+        </div>
+        <div className="p-4 rounded-md shadow-md text-white bg-green-500 flex flex-col items-center">
+          <span className="text-3xl font-bold">
+            {customers.length - pendingReports}
+          </span>
+          <span className="mt-2 text-center">Completed</span>
+        </div>
+        <div className="p-4 rounded-md shadow-md text-white bg-red-500 flex flex-col items-center">
+          <span className="text-3xl font-bold">{pendingReports}</span>
+          <span className="mt-2 text-center">Pending</span>
+        </div>
       </div>
-      {/* Chart Section */}
-      {/* <div className="bg-white p-5 rounded-md shadow-md mb-6">
-        <h2 className="text-lg font-bold text-gray-700 mb-4">Report Chart</h2>
-        <div className="h-60 bg-gray-100 rounded flex justify-center items-center">
-
-        </div>
-      </div> */}
-      {/*  */}
-      {/* <div className="p-4 bg-white shadow rounded-lg">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Export Customer Data
-          </h2>
-          <button
-            onClick={handleExport}
-            disabled={loading}
-            className={`flex items-center px-4 py-2 rounded ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
-            }`}
-          >
-            <Download className="mr-2 h-5 w-5" />
-            {loading ? "Exporting..." : "Export to CSV"}
-          </button>
-        </div>
-
-        {error && (
-          <div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-            role="alert"
-          >
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-      </div> */}
       <div className="p-4 bg-white rounded-md shadow-md mb-6">
         <div className="flex justify-between mb-4">
           <h2 className="text-2xl font-bold">Report Customers</h2>
@@ -251,7 +235,7 @@ const DashboardReport = () => {
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* <div className="overflow-x-auto">
           <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
             <thead className="bg-gray-100">
               <tr>
@@ -294,9 +278,79 @@ const DashboardReport = () => {
               ))}
             </tbody>
           </table>
+        </div> */}
+        <div className="overflow-hidden">
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr className="bg-gray-200 text-left text-sm font-semibold text-gray-800">
+                <th className="px-4 py-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedCustomers.length === customers.length}
+                    onChange={() =>
+                      setSelectedCustomers(
+                        selectedCustomers.length === customers.length
+                          ? []
+                          : [...customers]
+                      )
+                    }
+                    className="form-checkbox h-4 w-4 text-gray-400 focus:ring-gray-500"
+                  />
+                </th>
+                {[
+                  "Msisdn",
+                  "Nama Lengkap",
+                  "Nik",
+                  "No KK",
+                  "Tempat Lahir",
+                  "Tanggal Lahir",
+                  "No Hp",
+                  "Email",
+                  "Status",
+                ].map((key) => (
+                  <th key={key} className="px-4 py-2 uppercase tracking-wider">
+                    {key.replace(/_/g, " ")}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((customer, index) => (
+                <tr
+                  key={index}
+                  className={`${
+                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  } hover:bg-gray-100 transition-colors duration-200`}
+                >
+                  <td className="px-4 py-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedCustomers.includes(customer)}
+                      onChange={() => toggleCustomerSelection(customer)}
+                      className="form-checkbox h-4 w-4 text-gray-600 focus:ring-gray-500"
+                    />
+                  </td>
+                  {[
+                    "msidn",
+                    "full_name",
+                    "nik",
+                    "kk_number",
+                    "tempat_lahir",
+                    "tgl_lahir",
+                    "phone_2",
+                    "email",
+                    "status",
+                  ].map((key, idx) => (
+                    <td key={idx} className="px-4 py-2 text-sm text-gray-700">
+                      {customer[key]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-
       {/* Pagination */}
       <div className="mt-4 flex justify-between items-center">
         <span className="text-sm text-gray-600">

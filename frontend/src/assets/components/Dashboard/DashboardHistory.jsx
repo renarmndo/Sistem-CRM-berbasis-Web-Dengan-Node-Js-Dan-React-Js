@@ -1,6 +1,38 @@
-import { User } from "lucide-react";
+//
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 const DashboardHistory = () => {
+  const [pendingData, setPendingData] = useState([]);
+  // Ambil data pending dari backend
+
+  // Ambil data dari backend
+  useEffect(() => {
+    const fetchPendingData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/agent/all-costumer"
+        );
+        setPendingData(response.data.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchPendingData();
+  }, []);
+
+  // Statistik
+  const activatedCount = pendingData.filter(
+    (item) => item.status === "success"
+  ).length;
+  const needCallbackCount = pendingData.filter(
+    (item) => item.status === "Need Call Back"
+  ).length;
+  const waitForActivatorCount = pendingData.filter(
+    (item) => item.status === "pending"
+  ).length;
+  const totalCount = pendingData.length;
+
   return (
     <div className="w-full mt-8">
       <div>
@@ -68,11 +100,19 @@ const DashboardHistory = () => {
             </div> */}
             <div className="grid grid-cols-5 gap-4 mb-6 mt-6">
               {[
-                { label: "Activated", count: 0, color: "green" },
-                { label: "Need Call Back", count: 0, color: "blue" },
+                { label: "Activated", count: activatedCount, color: "green" },
+                {
+                  label: "Need Call Back",
+                  count: needCallbackCount,
+                  color: "blue",
+                },
                 { label: "Wait for Activator", count: 0, color: "yellow" },
-                { label: "Wait for QC", count: 0, color: "red" },
-                { label: "Total", count: 0, color: "purple" },
+                {
+                  label: "Wait for QC",
+                  count: waitForActivatorCount,
+                  color: "red",
+                },
+                { label: "Total", count: totalCount, color: "purple" },
               ].map((card, index) => (
                 <div
                   key={index}
@@ -84,7 +124,7 @@ const DashboardHistory = () => {
               ))}
             </div>
 
-            {/* Table */}
+            {/* Tabel */}
             <div className="bg-white p-5 rounded-md shadow-md">
               <table className="table-auto w-full border-collapse border border-gray-300">
                 <thead>
@@ -94,11 +134,10 @@ const DashboardHistory = () => {
                       "Nama",
                       "MF Package",
                       "CLS",
-                      "Migration Bonus",
-                      "Users",
-                      "Date",
+                      "No KK",
+                      "Rt",
+                      "Rw",
                       "Status",
-                      "Action",
                     ].map((header, index) => (
                       <th
                         key={index}
@@ -110,11 +149,53 @@ const DashboardHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td colSpan="9" className="text-center text-gray-500 py-4">
-                      No data available in table
-                    </td>
-                  </tr>
+                  {pendingData.length > 0 ? (
+                    pendingData.map((data, index) => (
+                      <tr key={index} className="hover:bg-gray-100">
+                        <td className="border border-gray-300 px-4 py-2">
+                          {data.msidn}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {data.full_name}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {data.package_id}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {data.cls}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {data.kk_number}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {data.rt}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {data.rw}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <span
+                            className={`font-bold ${
+                              data.status === "success"
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {data.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="9"
+                        className="text-center text-gray-500 py-4"
+                      >
+                        No data available in table
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
 

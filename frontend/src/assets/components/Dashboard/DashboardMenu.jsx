@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Info, Trash2 } from "lucide-react";
 import Modal from "react-modal";
+import Swal from "sweetalert2";
 
 const DashboardMenu = () => {
   const [result, setResult] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedCostumer, setSelectedCustomers] = useState(null);
+  const [pendingData, setPendingData] = useState([]);
+  const [packages, setPackages] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
     msidn: "",
@@ -81,6 +84,174 @@ const DashboardMenu = () => {
     closeModal();
   };
 
+  // Ambil data pending dari backend
+
+  const fetchPendingData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/agent/all-costumer"
+      );
+      setPendingData(response.data.data);
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak dapat mengambil data pending",
+      });
+      console.log("error fetch", error);
+    }
+  };
+
+  // Ambil data pending saat komponen dimuat
+  useEffect(() => {
+    fetchPendingData();
+  }, []);
+
+  // Handle Approve
+
+  // const handleApprove = async (id) => {
+  //   try {
+  //     console.log("Sending request to approve with pendingId:", id);
+  //     const response = await axios.post(
+  //       "http://localhost:5000/api/activator/activated",
+  //       { id }
+  //     );
+  //     console.log(response.data); // Log respons dari server
+  //     // menampilkan pesan
+  //     Swal.fire({
+  //       icon: "success",
+  //       title: "success",
+  //       text: response.data.msg,
+  //       showConfirmButton: true,
+  //     });
+  //     // setPendingData(pendingData.filter((item) => item.id !== pendingId));
+  //   } catch (error) {
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "Oops...",
+  //       text: "Terjadi kesalahan saat mengapprove data",
+  //       showConfirmButton: true,
+  //     });
+  //   }
+  // };
+
+  // const handleApprove = async (id) => {
+  //   try {
+  //     const result = await Swal.fire({
+  //       title: "Konfirmasi Approve",
+  //       text: "Anda yakin ingin meng-approve data ini?",
+  //       icon: "question",
+  //       showCancelButton: true,
+  //       confirmButtonText: "Ya, Approve",
+  //       cancelButtonText: "Batal",
+  //     });
+
+  //     if (result.isConfirmed) {
+  //       const response = await axios.post(
+  //         "http://localhost:5000/api/activator/activated",
+  //         { id } // Pastikan mengirim id, bukan pendingId
+  //       );
+
+  //       Swal.fire({
+  //         icon: "success",
+  //         title: "Berhasil",
+  //         text: response.data.msg,
+  //       });
+
+  //       // Refresh data setelah approve
+  //       fetchPendingData();
+  //     }
+  //   } catch (error) {
+  //     console.error("Approve Error:", error);
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "Gagal",
+  //       text: error.response?.data?.msg || "Terjadi kesalahan saat approve",
+  //     });
+  //   }
+  // };
+  const activateCustomer = async (id) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/activator/activated",
+        { id }
+      );
+      if (response.status === 200) {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Data berhasil diaktifkan",
+          showCancelButton: true,
+          confirmButtonText: "Ya, Aktifkan!",
+          cancelButtonText: "Tidak, Batalkan",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak dapat mengaktifkan data",
+      });
+      console.log("error post", error);
+    }
+  };
+
+  // const activateCustomer = async (id) => {
+  //   try {
+  //     // Menampilkan Swal dengan konfirmasi
+  //     const result = await Swal.fire({
+  //       title: "Konfirmasi",
+  //       text: "Apakah Anda yakin ingin mengaktifkan data ini?",
+  //       icon: "warning",
+  //       showCancelButton: true, // Menampilkan tombol Cancel
+  //       confirmButtonText: "Ya, Aktifkan!",
+  //       cancelButtonText: "Tidak, Batalkan",
+  //     });
+
+  //     // Jika pengguna menekan 'Ya, Aktifkan!'
+  //     if (result.isConfirmed) {
+  //       // Kirim request POST ke API
+  //       const response = await axios.post(
+  //         "http://localhost:5000/api/activator/activated",
+  //         { id }
+  //       );
+
+  //       if (response.status === 200) {
+  //         Swal.fire({
+  //           icon: "success",
+  //           title: "Berhasil",
+  //           text: "Data berhasil diaktifkan",
+  //         });
+  //       }
+  //     }
+  //   } catch (error) {
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "Gagal",
+  //       text: "Tidak dapat mengaktifkan data",
+  //     });
+  //     console.log("error post", error);
+  //   }
+  // };
+
+  const handleActivate = (id) => {
+    activateCustomer(id);
+  };
+
+  useEffect(() => {
+    // Ambil data paket dari API
+    const fetchPackages = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/packages");
+        setPackages(response.data.data); // Update state dengan data paket
+      } catch (error) {
+        console.error("Error fetching packages:", error);
+      }
+    };
+
+    fetchPackages(); // Panggil fungsi untuk mengambil data saat komponen dimuat
+  }, []);
+
   return (
     <div className="p-5 bg-gray-100 min-h-screen">
       {/* Header */}
@@ -152,7 +323,13 @@ const DashboardMenu = () => {
                   {costumer.activate_date}
                 </td>
                 <td className="border border-gray-300 p-2">
-                  <span className=" text-red-600 font-bold font-Psans">
+                  <span
+                    className={`font-bold font-Psans ${
+                      costumer.status === "success"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {costumer.status}
                   </span>
                 </td>
@@ -160,12 +337,6 @@ const DashboardMenu = () => {
                   <div className="flex items-center justify-center gap-2">
                     <button onClick={openModal}>
                       <Info size={20} className="text-blue-500" />
-                    </button>
-                    <button>
-                      <Trash2
-                        size={20}
-                        className="text-red-500 hover:text-red-700"
-                      />
                     </button>
                   </div>
                 </td>
@@ -216,7 +387,11 @@ const DashboardMenu = () => {
                           className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
                           <option>-- Choose MF Package --</option>
-                          {/* Add options dynamically here */}
+                          {packages.map((pkg) => (
+                            <option key={pkg.id} value={pkg.id}>
+                              {pkg.name} {/* Tampilkan nama paket */}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div>
@@ -302,7 +477,12 @@ const DashboardMenu = () => {
                         <label htmlFor="tgl_aktif">Tgl Aktif</label>
                         <input
                           type="date"
-                          value={formData.activate_date}
+                          name="tgl_aktif"
+                          value={
+                            formData.activate_date
+                              ? formData.activate_date.split("T")[0]
+                              : ""
+                          }
                           onChange={(e) =>
                             setFormData({
                               ...formData,
@@ -336,7 +516,11 @@ const DashboardMenu = () => {
                           name="tgl_lahir"
                           id="tgl_lahir"
                           placeholder="Insert Tanggal Lahir"
-                          value={formData.tgl_lahir}
+                          value={
+                            formData.tgl_lahir
+                              ? formData.activate_date.split("T")[0]
+                              : ""
+                          }
                           className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                       </div>
@@ -528,7 +712,7 @@ const DashboardMenu = () => {
                         Feddback
                       </button>
                       <button
-                        type="submit"
+                        onClick={() => handleActivate(formData.id)}
                         className="w-full bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
                       >
                         Approve

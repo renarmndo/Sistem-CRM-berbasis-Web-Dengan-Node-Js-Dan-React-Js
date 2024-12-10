@@ -16,6 +16,7 @@ import {
   History,
   UserRoundPlus,
   FilePlus,
+  FolderDown,
 } from "lucide-react";
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
@@ -72,6 +73,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       path: "/dashboard",
     },
     {
+      title: "Activated Data",
+      icon: <FolderDown size={20} />,
+      path: "/activated",
+    },
+    {
       title: "Pending",
       icon: <Users size={20} />,
       path: "/custumers",
@@ -109,12 +115,19 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   ];
 
   const roleMenus = {
-    leader: ["Dashboard", "Form Input", "Reports", "Add Users", "Add Packages"],
+    leader: [
+      "Dashboard",
+      "Activated Data",
+      "Reports",
+      "Add Users",
+      "Add Packages",
+    ],
     agent: ["Dashboard", "Form Input", "History"],
-    team_fu: ["Dashboard", "History", "Form Input"],
-    activator: ["Pending", "Dashboard", "History"],
+    team_fu: ["Dashboard", "History", "Form Input", "Pending"],
+    activator: ["Pending", "Dashboard"],
     screener: ["Dashboard", "Form Input", "Add Users"],
   };
+
   const [role, setRole] = useState(() => {
     // Parse the token and extract role, defaulting to 'screener' if not found
     const tokenData = localStorage.getItem("user");

@@ -17,6 +17,7 @@ const screenerRoutes = require("./routes/screenerRoutes");
 // const activatedRoutes = require("./routes/activatorRoutes");
 const leaderRoutes = require("./routes/leaderRoutes");
 const userRoutes = require("./routes/userRoutes");
+const activatedRoutes = require("./routes/activatorRoutes");
 
 // middleware
 app.use("/api/auth", authRoutes);
@@ -25,6 +26,7 @@ app.use("/api/screener", screenerRoutes);
 // app.use("/api/activator", activatedRoutes);
 app.use("/api/leader", leaderRoutes);
 app.use("/api", userRoutes);
+app.use("/api/activator", activatedRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);

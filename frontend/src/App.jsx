@@ -11,6 +11,7 @@ import HistoryPages from "./assets/components/Pages/HistoryPages";
 import ReportPages from "./assets/components/Pages/ReportPages";
 import AddUserPages from "./assets/components/Pages/AddUserPages";
 import AddPackagesPages from "./assets/components/Pages/AddPackagesPages";
+import ActivatedPages from "./assets/components/Pages/ActivatedPages";
 const App = () => {
   return (
     <Router>
@@ -92,6 +93,14 @@ const App = () => {
           element={
             <ProtectedRoutes allowRoles={["leader"]}>
               <AddPackagesPages />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/activated"
+          element={
+            <ProtectedRoutes allowRoles={["leader"]}>
+              <ActivatedPages />
             </ProtectedRoutes>
           }
         />

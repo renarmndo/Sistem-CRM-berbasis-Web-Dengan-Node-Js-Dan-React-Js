@@ -26,6 +26,9 @@ const db = mysql.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASS || "", // Default kosong
   database: process.env.DB_NAME, // Ganti dengan nama database Anda
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
 // Tambahkan fungsi wrapper
@@ -40,6 +43,15 @@ const promiseDb = {
   },
 };
 
+const getConnection = () => {
+  return new Promise((resolve, reject) => {
+    db.getConnection((err, connection) => {
+      if (err) return reject(err);
+      resolve(connection);
+    });
+  });
+};
+
 console.log("Connected to Database");
 
-module.exports = { db, promiseDb };
+module.exports = { db, promiseDb, getConnection };

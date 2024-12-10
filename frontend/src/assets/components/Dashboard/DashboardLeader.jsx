@@ -105,21 +105,6 @@ const DashboardLeader = () => {
         </select>
         <span className="ml-2">entries</span>
       </div>
-      {/* 
-      <div className="bg-blue- text-gray-800 rounded-lg p-4">
-        <div className="grid grid-cols-8 gap-4 border-b pb-2 font-medium">
-          <div className="col-span-1">Misdsn</div>
-          <div className="col-span-1">Nama</div>
-          <div className="col-span-1">MF Package</div>
-          <div className="col-span-1">CLS</div>
-          <div className="col-span-1">Migration Bonus</div>
-          <div className="col-span-1">Users</div>
-          <div className="col-span-1">Date</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-1">Action</div>
-        </div>
-        <div className="text-center py-4">No data available in table</div>
-      </div> */}
       <div className="flex justify-between mt-4">
         <div>Previous</div>
         <div>Next</div>
